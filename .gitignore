@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Build artifacts
+build/
+dist/
+*.spec
+
+# Dev-time scratch files
+_dev_*.py
+_shot_*.png
+
+# Editors / OS
+.vscode/
+.idea/
+Thumbs.db
