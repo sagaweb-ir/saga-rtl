@@ -1,0 +1,43 @@
+name: Build exe
+
+# Cloud build: on every pushed version tag (v*) a fresh RTLViewer.exe is
+# built on a GitHub Windows runner and attached to a GitHub Release.
+# Manual runs (workflow_dispatch) produce the same exe as a workflow
+# artifact without creating a release.
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt pyinstaller
+
+      - name: Build with PyInstaller
+        shell: cmd
+        run: call build.bat
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RTLViewer-exe
+          path: dist/RTLViewer.exe
+
+      - name: Attach to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/RTLViewer.exe
+          generate_release_notes: true
