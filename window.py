@@ -644,7 +644,6 @@ class ViewerWindow(QMainWindow):
         #: True while the branded launch page (not clipboard) is shown.
         self._welcome_mode = False
         self._welcome_top = 0
-        self._welcome_guide = False
         self._welcome_spacer_h: Optional[float] = None
         self._logo_cache: Optional[Tuple[str, int, int]] = None
         #: Per-popup "lock": while set, clicks outside the window do not
@@ -785,16 +784,10 @@ class ViewerWindow(QMainWindow):
     def show_welcome(self) -> None:
         """Manual-launch feedback: a big branded page, not clipboard content.
 
-        On the very first launch the page also carries a short guide
-        (how the hotkey works, where settings live); the flag is written
-        immediately with a full save so later runtime saves cannot drop it.
+        The first-launch guide is a separate dialog (guide_dialog.py) that
+        main.py shows on top of this page.
         """
 
-        first_run = not self._settings.extra.get("guide_shown", False)
-        if first_run:
-            self._settings.extra["guide_shown"] = True
-            self._settings.save()
-        self._welcome_guide = first_run
         self._raw_text = "SAGA RTL"
         self._welcome_mode = True
         self._present(self._welcome_html())
@@ -857,21 +850,6 @@ class ViewerWindow(QMainWindow):
                 f'<img src="data:image/png;base64,{b64}" width="{lw}" height="{lh}"></p>'
             )
         text_margin = max(0, int(top)) if not logo_html else 0
-        # First-launch guide: short, muted, centered under the brand text.
-        guide_html = ""
-        if self._welcome_guide:
-            gsize = max(11, round(14 * scale))
-            guide_html = (
-                f'<p dir="rtl" align="center" style="color:#8b949e;'
-                f'font-size:{gsize}px;margin:26px 0px 0px 0px">'
-                f'هر متنی را کپی کنید و کلید <b>→</b> را بزنید تا همین‌جا رندر شود</p>'
-                f'<p dir="rtl" align="center" style="color:#8b949e;'
-                f'font-size:{gsize}px;margin:8px 0px 0px 0px">'
-                f'بستن: <b>Esc</b> یا کلیک بیرون — نگه‌داشتن روی صفحه: دکمهٔ 📌</p>'
-                f'<p dir="rtl" align="center" style="color:#8b949e;'
-                f'font-size:{gsize}px;margin:8px 0px 0px 0px">'
-                f'میانبر را از <b>تنظیمات</b> عوض کنید: دکمهٔ ⚙️ بالا-چپ یا راست‌کلیک</p>'
-            )
         # Welcome text at 70% transparency; "RTL" uses the logo amber.
         return (
             spacer + logo_html +
@@ -879,7 +857,6 @@ class ViewerWindow(QMainWindow):
             f'font-size:{big}px;font-weight:bold">'
             f'<span style="color:rgba(230,237,243,77)">SAGA </span>'
             f'<span style="color:rgba(251,191,27,77)">RTL</span></p>'
-            + guide_html
         )
 
     def _welcome_spacer_height(self) -> float:

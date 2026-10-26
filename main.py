@@ -245,6 +245,14 @@ def main() -> int:
     # autostart (registry Run entry passes --autostart) stays silent.
     if "--autostart" not in sys.argv:
         window.show_welcome()
+        if not settings.extra.get("guide_dismissed"):
+            from guide_dialog import GuideDialog
+
+            # Clicks on the dialog land outside the popup's frame — pause
+            # the outside-click watcher while it is up (same as settings).
+            window._stop_click_watch()
+            GuideDialog(settings, window).exec()
+            window._maybe_resume_click_watch()
 
     def _on_quit() -> None:
         hotkeys.stop()
