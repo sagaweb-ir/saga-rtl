@@ -13,6 +13,8 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    permissions:
+      contents: write  # required to create the Release and upload the exe
     steps:
       - uses: actions/checkout@v4
 
